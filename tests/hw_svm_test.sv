@@ -1,7 +1,7 @@
 module hw_svm_test;
 
-    timeunit 1ns;
-    timeprecision 1ps;
+    //timeunit 1ns;
+    //timeprecision 1ps;
 
     logic clk;
     logic rst;
@@ -29,14 +29,14 @@ module hw_svm_test;
 
         @(posedge clk);
         rst <= 0;
-
+        test_valid <= 1;
         test <= 'ha24e;
-
         @(posedge clk);
+        test_valid <= 0;
 
         @(posedge label_valid);
 
-        $display("l %b \n",label);
+        $display("label = %b \n",label);
 
         $finish;
     end

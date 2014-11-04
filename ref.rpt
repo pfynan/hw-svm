@@ -1,0 +1,36 @@
+ 
+****************************************
+Report : reference
+Design : hw_svm
+Version: Z-2007.03-SP5
+Date   : Tue Nov  4 13:41:29 2014
+****************************************
+
+Attributes:
+    b - black box (unknown)
+   bo - allows boundary optimization
+    d - dont_touch
+   mo - map_only
+    h - hierarchical
+    n - noncombinational
+    r - removable
+    s - synthetic operator
+    u - contains unmapped logic
+
+Reference          Library       Unit Area   Count    Total Area   Attributes
+-----------------------------------------------------------------------------
+ADDHXL             typical       36.590401       3    109.771202  r
+DFFRHQX1           typical       69.854401       7    488.980804  n
+INVX1              typical        6.652800       5     33.264000  
+NAND2X1            typical        9.979200       3     29.937601  
+NAND3BX1           typical       16.632000       1     16.632000  
+NAND3X1            typical       13.305600       1     13.305600  
+NOR2BX1            typical       13.305600       3     39.916800  
+NOR2X1             typical        9.979200       3     29.937601  
+OAI2BB1X1          typical       16.632000       1     16.632000  
+OAI22X1            typical       19.958401       1     19.958401  
+TLATX1             typical       36.590401       2     73.180801  n
+XNOR2X1            typical       26.611200       1     26.611200  
+-----------------------------------------------------------------------------
+Total 12 references                                   898.128012
+1
