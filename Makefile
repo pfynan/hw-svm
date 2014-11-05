@@ -10,7 +10,7 @@ VPATH := tests
 ### Sources
 SRCS = $(wildcard *.sv)  $(wildcard tests/*.sv) $(wildcard lib/*.v)
 
-TESTS = hw_svm_test
+TESTS = hw_svm_test kernel_test
 
 ### Flags
 VSIMFLAGS += #-L altera_mf_ver 

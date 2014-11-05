@@ -1,78 +1,104 @@
 module hw_svm (
     input logic clk,
     input logic rst,
-    input logic signed [31:0] test,
-    input logic        test_valid,
-    output logic       test_ready,
+    input logic start,
     output logic       label,
-    output logic       label_valid,
-    input logic        label_ready);
+    output logic       label_valid
+    );
 
-    logic signed [31:0] support_vectors[31:0];
+    localparam int Features = 13;
+    localparam int Vectors = 25;
 
-    logic signed [31:0] alpha[31:0];
+    logic signed [31:0] support;
+    logic signed [31:0] alpha;
+    logic signed [31:0] test;
 
-    initial begin
-        $readmemh("svm.hex",support_vectors);
-        $readmemh("weights.hex",alpha);
-    end
+     logic [31:0] next_vector;
+     logic [31:0] next_feat;
+     logic addr_valid;
+     logic addr_start;
+     logic addr_stop;
 
-    logic [4:0] cur_vector;
+     mem_counter #(Features,Vectors) ctr
+        (.clk(clk)
+        ,.rst(rst)
+        ,.start(start)
+        ,.next_vector(next_vector)
+        ,.next_feat(next_feat)
+        ,.addr_valid(addr_valid)
+        ,.addr_start(addr_start)
+        ,.addr_stop(addr_stop)
+        );
 
-    enum {BEGIN,RUNNING,DONE} s,ns;
+    logic sum_valid;
+    logic sum_start;
+    logic sum_stop;
 
     always_ff @(posedge clk, posedge rst) begin
         if(rst) begin
-            s <= BEGIN;
+            sum_valid <= 0;
+            sum_start <= 0;
+            sum_stop <= 0;
         end
         else begin
-            s <= ns;
+            sum_valid <= addr_valid;
+            sum_start <= addr_start;
+            sum_stop <= addr_stop;
         end
     end
 
-    always_comb case(s)
-        BEGIN: ns = test_valid & test_ready ? RUNNING : BEGIN;
-        RUNNING: ns = cur_vector == '1 ? DONE : RUNNING;
-        DONE: ns = test_valid & test_ready ? RUNNING : DONE;
-    endcase
+    logic [31:0] next_addr;
 
-    logic [31:0] my_test;
+    assign next_addr = next_feat + next_vector;
+
+    support_mem #(Features,Vectors) supports
+        (.clk(clk)
+        ,.address(next_addr)
+        ,.support(support)
+        );
+
+    alpha_mem #(Features,Vectors) alphas
+        (.clk(clk)
+        ,.address(next_addr)
+        ,.support(alpha)
+        );
+
+    test_mem #(Features,Vectors) tests
+        (.clk(clk)
+        ,.address(next_feat)
+        ,.test(test)
+        );
+
+    logic vector_start;
+    logic vector_stop;
 
     always_ff @(posedge clk, posedge rst) begin
         if(rst) begin
-            my_test <= '0;
+            vector_start <= 0;
+            vector_stop <= 0;
         end
-        else if(test_valid & test_ready) begin
-            my_test <= test;
-        end
-    end
-
-    assign test_ready = s == BEGIN | s == DONE;
-    assign label_valid = s == DONE;
-
-    always_ff @(posedge clk, posedge rst) begin
-        if(rst) begin
-            cur_vector <= '0;
-        end else if(s == RUNNING) begin
-            cur_vector <= cur_vector + 1;
-        end else begin
-            cur_vector <= '0;
+        else begin
+            vector_start <= next_feat == 0;
+            vector_stop <= next_feat == Features - 1;
         end
     end
 
-    logic signed [31:0] accum;
-
-    always_ff @(posedge clk, posedge rst) begin
-        if(rst) begin
-            accum <= '0;
-        end else if(s == RUNNING) begin
-            accum <= accum + alpha[cur_vector] * ( support_vectors[cur_vector]
-                                                 * my_test);
-        end
-    end
-
-    assign label = ~accum[31];
+    test_sum ts
+        (.clk(clk)
+        ,.rst(rst)
+        ,.test(test)
+        ,.support_vector(support)
+        ,.alpha(alpha)
+        ,.in_valid(sum_valid)
+        ,.in_start(sum_start)
+        ,.in_end(sum_stop)
+        ,.vector_start(vector_start)
+        ,.vector_end(vector_stop)
+        ,.label(label)
+        ,.label_valid(label_valid)
+        );
 
 
 endmodule
+
 
