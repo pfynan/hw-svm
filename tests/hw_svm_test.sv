@@ -12,12 +12,9 @@ module hw_svm_test;
         forever #10 clk = ~clk;
     end
 
-    logic signed [31:0] test;
-    logic        test_valid;
-    logic       test_ready;
     logic       label;
     logic       label_valid;
-    logic        label_ready;
+    logic       label_ready;
 
     hw_svm dut(.*);
 
@@ -30,8 +27,10 @@ module hw_svm_test;
         @(posedge clk);
         rst <= 0;
 
-        test <= 'ha24e;
+        start <= 1;
+        @(posedge clk);
 
+        start <= 0;
         @(posedge clk);
 
         @(posedge label_valid);
