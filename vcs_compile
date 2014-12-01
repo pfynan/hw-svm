@@ -1,0 +1,4 @@
+#!/bin/bash
+
+vcs -sverilog *.sv tests/*.sv
+./simv

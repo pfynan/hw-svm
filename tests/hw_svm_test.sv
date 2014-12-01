@@ -1,7 +1,7 @@
 module hw_svm_test;
 
-    timeunit 1ns;
-    timeprecision 1ps;
+    //timeunit 1ns;
+    //timeprecision 1ps;
 
     logic clk;
     logic rst;

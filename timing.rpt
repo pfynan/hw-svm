@@ -1,0 +1,41 @@
+ 
+****************************************
+Report : timing
+        -path full
+        -delay max
+        -max_paths 1
+Design : hw_svm
+Version: Z-2007.03-SP5
+Date   : Tue Nov  4 13:41:28 2014
+****************************************
+
+Operating Conditions: typical   Library: typical
+Wire Load Model Mode: top
+
+  Startpoint: s_reg[0] (rising edge-triggered flip-flop)
+  Endpoint: label_valid
+            (output port)
+  Path Group: default
+  Path Type: max
+
+  Point                                    Incr       Path
+  -----------------------------------------------------------
+  s_reg[0]/CK (DFFRHQX1)                   0.00       0.00 r
+  s_reg[0]/Q (DFFRHQX1)                    0.25       0.25 r
+  U163/Y (INVX1)                           0.06       0.30 f
+  U162/Y (NAND2X1)                         0.09       0.39 r
+  U155/Y (INVX1)                           0.02       0.41 f
+  label_valid (out)                        0.00       0.41 f
+  data arrival time                                   0.41
+
+  max_delay                               10.00      10.00
+  output external delay                    0.00      10.00
+  data required time                                 10.00
+  -----------------------------------------------------------
+  data required time                                 10.00
+  data arrival time                                  -0.41
+  -----------------------------------------------------------
+  slack (MET)                                         9.59
+
+
+1

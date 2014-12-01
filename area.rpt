@@ -1,0 +1,25 @@
+Information: Updating design information... (UID-85)
+ 
+****************************************
+Report : area
+Design : hw_svm
+Version: Z-2007.03-SP5
+Date   : Tue Nov  4 13:41:28 2014
+****************************************
+
+Library(s) Used:
+
+    typical (File: /afs/ece/class/ece341/setup/Artisan/typical.db)
+
+Number of ports:               39
+Number of nets:                38
+Number of cells:               31
+Number of references:          12
+
+Combinational area:        335.966406
+Noncombinational area:     562.161606
+Net Interconnect area:      undefined  (No wire load specified)
+
+Total cell area:           898.127991
+Total area:                 undefined
+1
