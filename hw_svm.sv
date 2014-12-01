@@ -1,5 +1,5 @@
-`define DATA_SIZE 32
-`define ACCUM_SIZE 64
+`define DATA_SIZE 25
+`define ACCUM_SIZE 48
 `define NUM_FEAT 2
 `define NUM_SV 3
 `define NUM_INST 2
