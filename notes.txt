@@ -1,0 +1,10 @@
+sv.hex contains:
+[1 2
+ 3 4
+ 5 6]
+
+test.hex contains:
+[2 1
+ 4 3]
+note that the order is "reversed" because of the way indexing is done in logic
+arrays
