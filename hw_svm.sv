@@ -1,39 +1,38 @@
+`define DATA_SIZE 32
+`define ACCUM_SIZE 64
+`define NUM_FEAT 2
+`define NUM_SV 3
+
 module hw_svm
-  #(parameter DATA_SIZE = 32,
-    parameter ACCUM_SIZE = 64,
-    parameter NUM_FEAT = 2,
-    parameter NUM_SV = 3)
 ( input   logic clk, rst, start, last_input,
-  input   logic [NUM_FEAT-1:0][DATA_SIZE-1:0] test_vector,
-  input   logic [NUM_SV-1:0][NUM_FEAT-1:0][DATA_SIZE-1:0]  support_vectors,
+  input   logic [`NUM_FEAT-1:0][`DATA_SIZE-1:0]               test_vector,
+  input   logic [`NUM_SV-1:0][`NUM_FEAT-1:0][`DATA_SIZE-1:0]  support_vectors,
   output  logic valid,
-  output  logic [ACCUM_SIZE-1:0]  result);
+  output  logic [`ACCUM_SIZE-1:0]  result);
 
   // support vectors
-  logic [$clog2(NUM_SV)-1:0]    sv_i;
-  //logic [NUM_SV-1:0][NUM_FEAT-1:0][DATA_SIZE-1:0]  support_vectors;
-  logic [NUM_FEAT-1:0][DATA_SIZE-1:0]              sv_in;
+  logic [$clog2(`NUM_SV)-1:0]   sv_i;
+  logic [`NUM_FEAT-1:0][`DATA_SIZE-1:0]                 sv_in;
   // interconnect
-  logic [NUM_FEAT-1:0][NUM_FEAT-1:0][DATA_SIZE-1:0] curr_vector_in,
-                                                    curr_vector_out;
-  logic [NUM_FEAT-1:0][ACCUM_SIZE-1:0]              accum_in, accum_out;
+  logic [`NUM_FEAT-1:0][`NUM_FEAT-1:0][`DATA_SIZE-1:0]  curr_vector_in,
+                                                        curr_vector_out;
+  logic [`NUM_FEAT-1:0][`ACCUM_SIZE-1:0]                accum_in, accum_out;
   // misc
   logic                         start_inner, last_inner, final_inst;
-  logic [$clog2(NUM_FEAT)-1:0]  delay;
+  logic [$clog2(`NUM_FEAT)-1:0] delay;
 
-  // TODO: PARAMETERIZE 64'd0 if necessary
   // interconnect
   always_comb begin
     sv_in = support_vectors[sv_i];
-    curr_vector_in = {curr_vector_out[NUM_FEAT-2:0], test_vector};
-    accum_in = {accum_out[NUM_FEAT-2:0], 64'd0};
-    result = accum_out[NUM_FEAT-1];
+    curr_vector_in = {curr_vector_out[`NUM_FEAT-2:0], test_vector};
+    accum_in = {accum_out[`NUM_FEAT-2:0], `ACCUM_SIZE'd0};
+    result = accum_out[`NUM_FEAT-1];
   end
 
   generate
     genvar i; // i is index of feature
-    for (i=0; i<NUM_FEAT; i++) begin
-      pipeline_stage #(DATA_SIZE, ACCUM_SIZE, NUM_FEAT, i)
+    for (i=0; i<`NUM_FEAT; i++) begin
+      pipeline_stage #(`DATA_SIZE, `ACCUM_SIZE, `NUM_FEAT, i)
                       pipeline_module(.sv(sv_in[i]),
                                       .curr_vector_in(curr_vector_in[i]),
                                       .accum_in(accum_in[i]),
@@ -49,8 +48,8 @@ module hw_svm
   always_comb begin
     start_inner = ((cs == INIT) && start) ||
                   (((cs == RUN) || (cs == RUN_LAST)) && (sv_i == 0));
-    last_inner = sv_i == (NUM_SV-1);
-    final_inst = delay == (NUM_FEAT-1);
+    last_inner = sv_i == (`NUM_SV-1);
+    final_inst = delay == (`NUM_FEAT-1);
   end
 
   always_ff @(posedge clk, posedge rst) begin
@@ -83,7 +82,7 @@ module hw_svm
   end
   
   enum  logic [1:0] {IDLE, FIRST, LATER} count_cs;
-  logic [$clog2(NUM_SV*NUM_FEAT)-1:0] count;
+  logic [$clog2(`NUM_SV*`NUM_FEAT)-1:0] count;
 
   // separate counter to track when results are valid
   always_ff @(posedge clk, posedge rst) begin
@@ -97,15 +96,15 @@ module hw_svm
                   count_cs <= (start) ? FIRST : IDLE;
                 end
         FIRST:  begin
-                  count <= (count == NUM_SV*NUM_FEAT) ? 1 : count + 1;
-                  count_cs <= (count == NUM_SV*NUM_FEAT) ? LATER : FIRST;
+                  count <= (count == `NUM_SV*`NUM_FEAT) ? 1 : count + 1;
+                  count_cs <= (count == `NUM_SV*`NUM_FEAT) ? LATER : FIRST;
                 end
         LATER:  begin
                   if (cs == DONE) begin
                     count <= 0;
                     count_cs <= IDLE;
                   end else begin
-                    count <= (count == NUM_SV) ? 1 : count + 1;
+                    count <= (count == `NUM_SV) ? 1 : count + 1;
                     count_cs <= LATER;
                   end
                 end
@@ -114,8 +113,8 @@ module hw_svm
   end
 
   always_comb begin
-    valid = ((count_cs == FIRST) && (count == NUM_SV*NUM_FEAT)) ||
-            ((count_cs == LATER) && (count == NUM_SV));
+    valid = ((count_cs == FIRST) && (count == `NUM_SV*`NUM_FEAT)) ||
+            ((count_cs == LATER) && (count == `NUM_SV));
   end
 
 endmodule: hw_svm
