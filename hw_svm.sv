@@ -2,13 +2,14 @@
 `define ACCUM_SIZE 64
 `define NUM_FEAT 2
 `define NUM_SV 3
+`define NUM_INST 2
 
 module hw_svm
 ( input   logic clk, rst, start, last_input,
   input   logic [`NUM_FEAT-1:0][`DATA_SIZE-1:0]               test_vector,
   input   logic [`NUM_SV-1:0][`NUM_FEAT-1:0][`DATA_SIZE-1:0]  support_vectors,
   output  logic valid,
-  output  logic [`ACCUM_SIZE-1:0]  result);
+  output  logic [`NUM_INST-1:0][`ACCUM_SIZE-1:0]  results);
 
   // support vectors
   logic [$clog2(`NUM_SV)-1:0]   sv_i;
@@ -17,9 +18,11 @@ module hw_svm
   logic [`NUM_FEAT-1:0][`NUM_FEAT-1:0][`DATA_SIZE-1:0]  curr_vector_in,
                                                         curr_vector_out;
   logic [`NUM_FEAT-1:0][`ACCUM_SIZE-1:0]                accum_in, accum_out;
+  logic [`ACCUM_SIZE-1:0]       result;
   // misc
   logic                         start_inner, last_inner, final_inst;
   logic [$clog2(`NUM_FEAT)-1:0] delay;
+  logic [$clog2(`NUM_INST)-1:0] result_i;
 
   // interconnect
   always_comb begin
@@ -88,23 +91,42 @@ module hw_svm
   always_ff @(posedge clk, posedge rst) begin
     if (rst) begin
       count <= 0;
+      result_i <= 0;
+      results <= 0;
       count_cs <= IDLE;
     end else begin
       case (count_cs)
         IDLE:   begin
                   count <= (start) ? count + 1 : 0;
+                  result_i <= 0;
                   count_cs <= (start) ? FIRST : IDLE;
                 end
         FIRST:  begin
-                  count <= (count == `NUM_SV*`NUM_FEAT) ? 1 : count + 1;
-                  count_cs <= (count == `NUM_SV*`NUM_FEAT) ? LATER : FIRST;
+                  if (count == `NUM_SV * `NUM_FEAT) begin
+                    count <= 1;
+                    result_i <= 1;
+                    results[0] <= result;
+                    count_cs <= LATER;
+                  end else begin
+                    count <= count + 1;
+                    result_i <= 0;
+                    count_cs <= FIRST;
+                  end
                 end
         LATER:  begin
                   if (cs == DONE) begin
                     count <= 0;
+                    result_i <= 0;
+                    results[result_i] <= result;
                     count_cs <= IDLE;
                   end else begin
-                    count <= (count == `NUM_SV) ? 1 : count + 1;
+                    if (count == `NUM_SV) begin
+                      count <= 1;
+                      result_i <= result_i + 1;
+                      results[result_i] <= result;
+                    end else begin
+                      count <= count + 1;
+                    end
                     count_cs <= LATER;
                   end
                 end
@@ -126,7 +148,7 @@ module hw_svm_tb;
   logic [1:0][31:0] test_vector;
   logic [2:0][1:0][31:0]  support_vectors;
   logic valid;
-  logic [63:0]  result;
+  logic [1:0][63:0]  results;
 
   hw_svm dut(.*);
 
