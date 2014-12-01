@@ -18,7 +18,7 @@ module hw_svm
   // test vector stuff
   logic last_input;
   logic [$clog2(`NUM_INST)-1:0] test_i;
-  logic [`NUM_FEAT-1:0][`DATA_SIZE-1:0] test_vectors[`NUM_INST];
+  logic [`NUM_FEAT-1:0][`DATA_SIZE-1:0] test_vectors[`NUM_INST-1:0];
   logic [`NUM_FEAT-1:0][`DATA_SIZE-1:0] test_vector;
   // interconnect
   logic [`NUM_FEAT-1:0][`NUM_FEAT-1:0][`DATA_SIZE-1:0]  curr_vector_in,
